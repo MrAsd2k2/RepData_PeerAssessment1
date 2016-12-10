@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Andrea Bruna" />
+
+<meta name="date" content="2016-12-09" />
+
+<title>PA1_template.rmd</title>
+
+<script src="PA1_template_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="PA1_template_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="PA1_template_files/navigation-1.1/tabsets.js"></script>
+<link href="PA1_template_files/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="PA1_template_files/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">PA1_template.rmd</h1>
+<h4 class="author"><em>Andrea Bruna</em></h4>
+<h4 class="date"><em>09 December 2016</em></h4>
+
+</div>
+
+
+<div id="coursera-reproducible-research.-peer-assessment-week-2" class="section level2">
+<h2>Coursera Reproducible Research. Peer Assessment Week 2</h2>
+<p>This project makes use of data from a personal activity monitoring device which collected the number of steps taken in a 5 minutes interval each day for two months from an anonymous individual. This data was acquired by forking the following github repository: <a href="github.com/rdpeng/RepData_PeerAssessment1" class="uri">github.com/rdpeng/RepData_PeerAssessment1</a>.</p>
+<p>The dataset is stored as a comma-separated-value file with an header row and 17568 observations.</p>
+<div id="reading-the-dataset-and-processing-the-data" class="section level3">
+<h3>Reading the dataset and processing the data</h3>
+<p>The following code chunks download and load the data from a zip file</p>
+<pre class="r"><code>temp &lt;- tempfile()
+download.file(&quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip&quot;,temp)
+data &lt;- read.table(unz(temp, &quot;activity.csv&quot;), sep=&quot;,&quot;, header=TRUE, stringsAsFactors = FALSE)
+unlink(temp)</code></pre>
+<p>The number of observation should be: 17568 for three variables. If there is a value mismatch double check the file has not been modified or moved from the original location as the following assumptions are (most probably) not valid anymore.</p>
+<pre class="r"><code>dim(data) == c(17568, 3)</code></pre>
+<pre><code>## [1] TRUE TRUE</code></pre>
+</div>
+<div id="histogram-of-the-total-number-of-steps-taken-each-day-and-meanmedian-of-the-population" class="section level3">
+<h3>Histogram of the total number of steps taken each day and mean/median of the population</h3>
+<p>The following histogram describes the relative frequency of the total number of steps during the days of the period analyzed.</p>
+<pre class="r"><code>temp &lt;- aggregate(data$steps, by=list(data$date), FUN=sum)
+hist(temp$x, xlab=&quot;Number of steps&quot;, main=&quot;Steps for day&quot;)</code></pre>
+<p><img src="figure/Two-1.png" /><!-- --></p>
+<p>The mean and median of the values of the dataset are respectively:</p>
+<pre class="r"><code>mean(temp$x, na.rm=TRUE)</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<pre class="r"><code>median(temp$x, na.rm=TRUE)</code></pre>
+<pre><code>## [1] 10765</code></pre>
+<p>According to the data and the graph most of the steps measures fall in the range <em>10000-15000</em></p>
+</div>
+<div id="daily-activity-pattern" class="section level3">
+<h3>Daily activity pattern</h3>
+<p>The following histogram shows the average daily activity pattern. The graph also includes the observations for which the steps taken measures are missing</p>
+<pre class="r"><code>temp2 &lt;- aggregate(data$steps, by=list(data$interval), FUN=mean, na.rm=TRUE)
+plot(temp2$Group.1, temp2$x, type=&quot;l&quot;, xlab=&quot;5-minute interval&quot;, ylab= &quot;average steps&quot;, main=&quot;Average daily activity pattern&quot;)</code></pre>
+<p><img src="figure/Four-1.png" /><!-- --></p>
+<p>Taking into consideration the previous observations it’s reasonable thinking that there might be time of the day the subjects walk more This suggests that between <em>08:00am and 10:00am</em> the subject is generally more active.</p>
+</div>
+<div id="maximum-number-of-steps-for-time-interval" class="section level3">
+<h3>Maximum number of steps for time interval</h3>
+<p>The previous plot narrow the range however, if more granularity is needed, finding the exact 5-minute interval that (on average) includes the maximum number of steps in out tests cases, is quite trivial.</p>
+<pre class="r"><code>temp2[which.max(temp2$x),1]</code></pre>
+<pre><code>## [1] 835</code></pre>
+<p>In terms of time of the day such a value is equal to:</p>
+<pre class="r"><code>paste(substr(temp2[which.max(temp2$x),1],1,1), &quot;:&quot;, 
+  substr(temp2[which.max(temp2$x),1],2,3), sep=&quot;&quot;)</code></pre>
+<pre><code>## [1] &quot;8:35&quot;</code></pre>
+</div>
+</div>
+<div id="part-2-overcoming-the-issue-of-missing-values" class="section level2">
+<h2>Part 2: Overcoming the issue of missing values</h2>
+<p>In the original data set there are missing values for a certain numbers of days. The exact number of “NA” is:</p>
+<pre class="r"><code>sum(is.na(data$steps))</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<p>In order to provide an answer to the most obvious question/objection: “are the missing values producing misleading results?”, different approaches might be devised.</p>
+<p>The simplest strategies to fill the missing values are essentially two: 1. replace the “NA”&quot; values with the mean or median for the same day 2. use the mean of the same 5-minute interval for the observation period</p>
+<p>The first option is reasonable unfortunately it would not work so well. In fact, there are days the values are not available at all. For example the data for “2012-10-01” are completely missing:</p>
+<pre class="r"><code>data[which(data$date == &quot;2012-10-01&quot;),1]</code></pre>
+<pre><code>##   [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+##  [24] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+##  [47] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+##  [70] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+##  [93] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [116] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [139] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [162] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [185] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [208] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [231] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [254] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [277] NA NA NA NA NA NA NA NA NA NA NA NA</code></pre>
+<p>I <em>personally</em> consider the second option better. Considering that men and women are tipically creatures of habit, it would probably make more sense.</p>
+<p>Consequently, the original data are merged with the equivalent average daily activity pattern for the same “5 minute” interval. The steps value for all the observation are preserved while, if equal to “NA”, it is replaced with the mean of the 5-minute interval to create a new dataset equal to the original but with the missing data filled in. (I chose not to delete potentially redundant columns because they might prove to be useful in subsequent tasks)</p>
+<pre class="r"><code>data2 &lt;- merge(data, temp2, by.x=&quot;interval&quot;, by.y=&quot;Group.1&quot;, sort=FALSE, all.x=TRUE)
+data2$steps[is.na(data2$steps)] &lt;- data2$x[data2$x]</code></pre>
+<div id="revised-histogram-of-the-total-number-of-steps-taken-each-day-and-meanmedian-of-the-population" class="section level3">
+<h3>Revised Histogram of the total number of steps taken each day and mean/median of the population</h3>
+<p>The revised histogram after aggregating the data and creating a “new”&quot; dataset is the following:</p>
+<pre class="r"><code>temp3 &lt;- aggregate(data2$steps, by=list(data2$date), FUN=sum)
+hist(temp3$x, xlab=&quot;Number of steps&quot;, main=&quot;Steps for day&quot;)</code></pre>
+<p><img src="figure/Sevendotone-1.png" /><!-- --></p>
+<p>while the new mean and median are:</p>
+<pre class="r"><code>mean(temp3$x)</code></pre>
+<pre><code>## [1] 9417.703</code></pre>
+<pre class="r"><code>median(temp3$x)</code></pre>
+<pre><code>## [1] 10395</code></pre>
+<p>Let us compare the mean and median values for both the datasets:</p>
+<pre class="r"><code>abs(mean(temp$x, na.rm=TRUE)-mean(temp3$x))</code></pre>
+<pre><code>## [1] 1348.485</code></pre>
+<pre class="r"><code>abs(median(temp$x, na.rm=TRUE)-median(temp3$x))</code></pre>
+<pre><code>## [1] 370</code></pre>
+<p>Compared to the previous set, the differences are minimal and the error acceptable, therefore we can assume that <em>the missing values did not excessively impact the original calculations and assumptions</em>:</p>
+</div>
+</div>
+<div id="analyze-potential-patterns-difference-between-weekdays-and-weekend-days" class="section level2">
+<h2>Analyze potential patterns difference between weekdays and weekend days</h2>
+<p>The following steps try to establish if there are significantly different activity patterns between the steps taken during the working week days and the weekends. This step requires classifying the data in two frame according to the week day of the measures then plotting a graph comparing the results.</p>
+<p>(Please note that, with my specific combination of Operating System, hardware architecture and locale settings, I had to reset the global “locale” variable to get the name of the weekdays in english).</p>
+<pre class="r"><code>Sys.setlocale(&quot;LC_TIME&quot;, &quot;C&quot;)</code></pre>
+<pre><code>## [1] &quot;C&quot;</code></pre>
+<pre class="r"><code>weekend &lt;- data[grepl(&quot;S(at|un)&quot;, weekdays(as.Date(data$date))),]
+weekday &lt;- data[grepl(&quot;Mon|Tue|Wed|Thu|Fri&quot;, weekdays(as.Date(data$date))),]
+avg_weekend &lt;- aggregate(weekend$steps, by=list(weekend$interval), FUN=mean, na.rm=TRUE)
+avg_weekday &lt;- aggregate(weekday$steps, by=list(weekday$interval), FUN=mean, na.rm=TRUE)
+
+
+par(mfrow=c(2,1), mar = c(0, 0, 1, 2), oma = c(4, 4, 2, 2))
+plot(avg_weekend$Group.1, avg_weekend$x, type=&quot;l&quot;,  xaxt = &quot;n&quot;, main=&quot;weekend&quot;, cex.main=1)
+plot(avg_weekday$Group.1, avg_weekday$x, type=&quot;l&quot;, xlab=&quot;interval&quot;, main=&quot;weekday&quot;, cex.main=1)
+mtext(&quot;Number of steps&quot;, side = 2, outer = TRUE, line = 2)
+mtext(&quot;Interval&quot;, side = 1, outer = TRUE, line = 2)</code></pre>
+<p><img src="figure/Eight-1.png" /><!-- --></p>
+<p>The graph seems to indicate that the subject is on average more active in the weekends however,in the weekdays, there are higher “peaks”&quot; of activity especially during the morning.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
